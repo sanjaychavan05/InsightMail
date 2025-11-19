@@ -7,6 +7,8 @@ import { SmartReply } from './SmartReply';
 import { LoadingOverlay } from './LoadingOverlay';
 import { RiskScore } from './RiskScore';
 import { EmotionInsight } from './EmotionInsight';
+import { analyzeEmail as analyzeEmailAPI } from '../services/api';
+import { toast } from 'sonner';
 
 interface AnalysisResult {
   intent: string;
@@ -37,92 +39,40 @@ export function EmailAnalyzer() {
 
     setIsLoading(true);
 
-    // Simulate API call
-    setTimeout(() => {
-      // Mock response data
-      const mockResult: AnalysisResult = {
-        intent: 'Request for Refund',
-        emotion: 'Frustrated',
-        urgency: 'High',
-        complianceFlags: ['GDPR Data Request', 'Financial Transaction'],
-        summary: 'Customer is requesting a refund for a recent purchase due to product malfunction. They mention having contacted support multiple times without resolution.',
-        actionItems: [
-          'Process refund within 24 hours',
-          'Investigate support ticket history',
-          'Follow up on product quality issue',
-          'Update customer on resolution timeline'
-        ],
-        suggestedReply: generateReplyByTone(selectedTone),
-        emotionInsight: 'Frustration detected because the customer mentions "contacted support multiple times" and uses phrases like "still no response" indicating repeated failed attempts to resolve the issue. The language intensity and repeated emphasis on delays suggest growing impatience.',
-        riskScore: 7.5,
+    try {
+      // Call real backend API
+      const result = await analyzeEmailAPI({
+        email: emailInput,
+        tone: selectedTone,
+      });
+
+      // Map API response to frontend format
+      const analysisData: AnalysisResult = {
+        intent: result.intent,
+        emotion: result.emotion,
+        urgency: result.urgency,
+        complianceFlags: result.compliance_flags.map(f => `${f.type}: ${f.detail}`),
+        summary: result.summary,
+        actionItems: result.action_items.map(a => a.task),
+        suggestedReply: result.smart_reply,
+        emotionInsight: result.emotion_reason,
+        riskScore: result.risk_score,
         riskBreakdown: {
-          emotionIntensity: 8,
-          priority: 9,
-          complianceRisk: 6,
-          escalationLikelihood: 7
-        }
+          emotionIntensity: result.risk_breakdown.emotion_intensity,
+          priority: result.risk_breakdown.priority,
+          complianceRisk: result.risk_breakdown.compliance_risk,
+          escalationLikelihood: result.risk_breakdown.escalation_likelihood,
+        },
       };
 
-      setAnalysisResult(mockResult);
+      setAnalysisResult(analysisData);
+      toast.success('Email analyzed successfully');
+    } catch (error) {
+      console.error('Analysis error:', error);
+      toast.error('Failed to analyze email. Please try again.');
+    } finally {
       setIsLoading(false);
-    }, 3000);
-  };
-
-  const generateReplyByTone = (tone: string) => {
-    const replies = {
-      formal: `Dear Valued Customer,
-
-Thank you for contacting us regarding your recent purchase. We acknowledge receipt of your refund request and sincerely apologize for the inconvenience this situation has caused.
-
-Upon review of your case, we have determined that your refund request meets our policy requirements. The refund will be processed immediately and credited to your original payment method within 3-5 business days.
-
-Furthermore, your feedback concerning product quality has been escalated to our Quality Assurance Department for thorough investigation and corrective action.
-
-Should you require any additional assistance, please do not hesitate to contact our support team.
-
-Respectfully,
-Customer Support Team`,
-      
-      empathetic: `Dear Valued Customer,
-
-Thank you for reaching out to us regarding your recent purchase. I sincerely apologize for the inconvenience you've experienced and for any delays in our response.
-
-I have reviewed your case and I'm pleased to inform you that we will process your refund immediately. You can expect to see the funds returned to your original payment method within 3-5 business days.
-
-Additionally, I've escalated your product quality concern to our quality assurance team to ensure this issue is addressed. Your feedback is invaluable in helping us improve our products and services.
-
-If you have any further questions or concerns, please don't hesitate to reach out. We're here to help.
-
-Best regards,
-Customer Support Team`,
-      
-      friendly: `Hi there!
-
-Thanks so much for getting in touch about your recent order. I'm really sorry to hear about the trouble you've had with your purchase – that's definitely not the experience we want you to have!
-
-Good news though – I've approved your refund and it's being processed right now. You should see the money back in your account within 3-5 business days.
-
-I've also passed your feedback along to our product team so they can look into this and make sure it doesn't happen again. We really appreciate you letting us know!
-
-If there's anything else I can help you with, just let me know. I'm here for you!
-
-Cheers,
-Customer Support Team`,
-      
-      assertive: `Dear Customer,
-
-We have received and reviewed your refund request.
-
-Your refund has been approved and will be processed within 24 hours. Funds will be returned to your original payment method within 3-5 business days.
-
-We have documented your product quality concern and it will be investigated by our quality assurance team.
-
-For any further inquiries, please reference ticket #[TICKET_NUMBER] when contacting support.
-
-Customer Support Team`
-    };
-
-    return replies[tone as keyof typeof replies] || replies.empathetic;
+    }
   };
 
   return (
