@@ -51,9 +51,11 @@ export function SettingsPage() {
 
   if (loading) {
     return (
-      <div className="h-full p-8 bg-gray-50">
-        <div className="max-w-4xl mx-auto">
-          <p className="text-center text-gray-500">Loading settings...</p>
+      <div className="h-full p-8">
+        <div className="max-w-4xl mx-auto flex items-center justify-center h-full">
+          <div className="glass-effect-strong rounded-3xl p-12 text-center">
+            <p className="text-white/60">Loading settings...</p>
+          </div>
         </div>
       </div>
     );
@@ -61,42 +63,46 @@ export function SettingsPage() {
 
   if (!settings) {
     return (
-      <div className="h-full p-8 bg-gray-50">
-        <div className="max-w-4xl mx-auto">
-          <p className="text-center text-gray-500">Failed to load settings</p>
+      <div className="h-full p-8">
+        <div className="max-w-4xl mx-auto flex items-center justify-center h-full">
+          <div className="glass-effect-strong rounded-3xl p-12 text-center border border-red-500/30">
+            <p className="text-red-400">Failed to load settings</p>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="h-full p-8 bg-gray-50">
+    <div className="h-full p-8">
       <div className="max-w-4xl mx-auto space-y-6">
-        <div>
-          <h1 className="text-gray-900">Settings</h1>
-          <p className="text-gray-500">Configure your InsightMail AI preferences</p>
+        <div className="mb-8 animate-slide-in">
+          <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-purple-400 via-blue-400 to-cyan-400 bg-clip-text text-transparent">Settings</h1>
+          <p className="text-white/60">Configure your InsightMail AI preferences</p>
         </div>
 
         {/* API Configuration */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm space-y-4">
+        <div className="glass-effect-strong rounded-3xl border border-white/10 p-6 shadow-xl space-y-4 animate-slide-in" style={{ animationDelay: '0.1s' }}>
           <div className="flex items-center gap-3">
-            <Database className="w-5 h-5 text-gray-600" />
-            <h3 className="text-gray-900">API Configuration</h3>
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
+              <Database className="w-5 h-5 text-white" />
+            </div>
+            <h3 className="text-white font-semibold">API Configuration</h3>
           </div>
-          <div className="space-y-3">
+          <div className="space-y-4">
             <div>
-              <Label htmlFor="api-endpoint">API Endpoint</Label>
+              <Label htmlFor="api-endpoint" className="text-white/80">API Endpoint</Label>
               <Input
                 id="api-endpoint"
                 type="text"
                 placeholder="https://api.example.com/analyze"
                 value={settings.api_endpoint}
                 onChange={(e) => updateSetting('api_endpoint', e.target.value)}
-                className="mt-1"
+                className="mt-2 bg-white/5 border-white/10 text-white placeholder:text-white/40 focus:border-purple-500"
               />
             </div>
             <div>
-              <Label htmlFor="api-key">API Key</Label>
+              <Label htmlFor="api-key" className="text-white/80">API Key</Label>
               <Input
                 id="api-key"
                 type="password"

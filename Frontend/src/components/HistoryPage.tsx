@@ -25,55 +25,59 @@ export function HistoryPage() {
   const getUrgencyColor = (urgency: string) => {
     switch (urgency) {
       case 'High':
-        return 'bg-red-100 text-red-700 border-red-200';
+        return 'bg-red-500/20 text-red-300 border-red-500/30';
       case 'Medium':
-        return 'bg-yellow-100 text-yellow-700 border-yellow-200';
+        return 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30';
       case 'Low':
-        return 'bg-green-100 text-green-700 border-green-200';
+        return 'bg-green-500/20 text-green-300 border-green-500/30';
       default:
-        return 'bg-gray-100 text-gray-700 border-gray-200';
+        return 'bg-gray-500/20 text-gray-300 border-gray-500/30';
     }
   };
 
   return (
-    <div className="h-full p-8 bg-gray-50">
+    <div className="h-full p-8">
       <div className="max-w-6xl mx-auto space-y-6">
-        <div>
-          <h1 className="text-gray-900">History</h1>
-          <p className="text-gray-500">View previously analyzed emails</p>
+        <div className="mb-8 animate-slide-in">
+          <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-purple-400 via-blue-400 to-cyan-400 bg-clip-text text-transparent">History</h1>
+          <p className="text-white/60">View previously analyzed emails</p>
         </div>
 
         {loading ? (
-          <div className="text-center py-12">
-            <p className="text-gray-500">Loading history...</p>
+          <div className="text-center py-12 glass-effect-strong rounded-3xl">
+            <p className="text-white/60">Loading history...</p>
           </div>
         ) : history.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-gray-500">No analysis history yet</p>
+          <div className="text-center py-12 glass-effect-strong rounded-3xl">
+            <Mail className="w-16 h-16 mx-auto mb-4 text-purple-400 opacity-50" />
+            <p className="text-white/60">No analysis history yet</p>
           </div>
         ) : (
-          <div className="space-y-3">
-            {history.map((item) => (
+          <div className="space-y-4 animate-slide-in" style={{ animationDelay: '0.1s' }}>
+            {history.map((item, index) => (
               <div
                 key={item.id}
-                className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+                className="glass-effect-strong rounded-3xl border border-white/10 p-6 shadow-xl hover-lift cursor-pointer transition-all"
+                style={{ animationDelay: `${0.1 + index * 0.05}s` }}
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <Mail className="w-5 h-5 text-gray-400" />
-                      <span className="text-gray-900">{item.intent}</span>
-                      <span className={`px-2 py-1 rounded-md border text-xs ${getUrgencyColor(item.urgency)}`}>
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
+                        <Mail className="w-5 h-5 text-white" />
+                      </div>
+                      <span className="text-white font-semibold">{item.intent}</span>
+                      <span className={`px-3 py-1 rounded-xl border text-sm font-medium ${getUrgencyColor(item.urgency)}`}>
                         {item.urgency}
                       </span>
                     </div>
-                    <p className="text-gray-600 mb-3">{item.email_text.substring(0, 150)}...</p>
-                    <div className="flex items-center gap-4 text-gray-500">
-                      <div className="flex items-center gap-1">
+                    <p className="text-white/70 mb-4 line-clamp-2">{item.email_text.substring(0, 150)}...</p>
+                    <div className="flex items-center gap-4 text-white/50 text-sm">
+                      <div className="flex items-center gap-2">
                         <Clock className="w-4 h-4" />
                         <span>{new Date(item.timestamp).toLocaleString()}</span>
                       </div>
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-2">
                         <AlertCircle className="w-4 h-4" />
                         <span>Sentiment: {item.emotion}</span>
                       </div>

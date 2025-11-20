@@ -30,9 +30,14 @@ export function Dashboard() {
 
   if (loading) {
     return (
-      <div className="h-full p-8 bg-gray-50">
-        <div className="max-w-7xl mx-auto">
-          <p className="text-center text-gray-500">Loading dashboard...</p>
+      <div className="h-full p-8">
+        <div className="max-w-7xl mx-auto flex items-center justify-center h-full">
+          <div className="glass-effect-strong rounded-3xl p-12 text-center">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center animate-pulse">
+              <Calendar className="w-8 h-8 text-white" />
+            </div>
+            <p className="text-white font-semibold">Loading dashboard...</p>
+          </div>
         </div>
       </div>
     );
@@ -40,22 +45,24 @@ export function Dashboard() {
 
   if (!metrics) {
     return (
-      <div className="h-full p-8 bg-gray-50">
-        <div className="max-w-7xl mx-auto">
-          <p className="text-center text-gray-500">Failed to load dashboard</p>
+      <div className="h-full p-8">
+        <div className="max-w-7xl mx-auto flex items-center justify-center h-full">
+          <div className="glass-effect-strong rounded-3xl p-12 text-center border border-red-500/30">
+            <p className="text-red-400">Failed to load dashboard</p>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="h-full p-8 bg-gray-50">
+    <div className="h-full p-8">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mb-8 animate-slide-in">
           <div>
-            <h1 className="text-gray-900">Insights Dashboard</h1>
-            <p className="text-gray-500">Track email analytics and compliance metrics</p>
+            <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-purple-400 via-blue-400 to-cyan-400 bg-clip-text text-transparent">Insights Dashboard</h1>
+            <p className="text-white/60">Track email analytics and compliance metrics</p>
           </div>
 
           {/* Filters */}
@@ -106,57 +113,59 @@ export function Dashboard() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-            <p className="text-gray-500 mb-1">Total Emails</p>
-            <p className="text-gray-900">{metrics.total_emails.toLocaleString()}</p>
-            <p className="text-green-600 mt-1">+12.5%</p>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 animate-slide-in" style={{ animationDelay: '0.1s' }}>
+          <div className="glass-effect-strong rounded-2xl border border-white/10 p-6 shadow-xl hover-lift">
+            <p className="text-white/60 mb-1 text-sm">Total Emails</p>
+            <p className="text-3xl font-bold text-white mb-1">{metrics.total_emails.toLocaleString()}</p>
+            <p className="text-green-400 text-sm font-medium">↑ +12.5%</p>
           </div>
-          <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-            <p className="text-gray-500 mb-1">Avg. Response Time</p>
-            <p className="text-gray-900">{metrics.avg_response_time} hours</p>
-            <p className="text-green-600 mt-1">-8.3%</p>
+          <div className="glass-effect-strong rounded-2xl border border-white/10 p-6 shadow-xl hover-lift">
+            <p className="text-white/60 mb-1 text-sm">Avg. Response Time</p>
+            <p className="text-3xl font-bold text-white mb-1">{metrics.avg_response_time} <span className="text-lg">hours</span></p>
+            <p className="text-green-400 text-sm font-medium">↓ -8.3%</p>
           </div>
-          <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-            <p className="text-gray-500 mb-1">Compliance Flags</p>
-            <p className="text-gray-900">{metrics.compliance_flags_count}</p>
-            <p className="text-red-600 mt-1">+5.2%</p>
+          <div className="glass-effect-strong rounded-2xl border border-white/10 p-6 shadow-xl hover-lift">
+            <p className="text-white/60 mb-1 text-sm">Compliance Flags</p>
+            <p className="text-3xl font-bold text-white mb-1">{metrics.compliance_flags_count}</p>
+            <p className="text-red-400 text-sm font-medium">↑ +5.2%</p>
           </div>
-          <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-            <p className="text-gray-500 mb-1">Positive Sentiment</p>
-            <p className="text-gray-900">{metrics.positive_sentiment_pct}%</p>
-            <p className="text-green-600 mt-1">+3.1%</p>
+          <div className="glass-effect-strong rounded-2xl border border-white/10 p-6 shadow-xl hover-lift">
+            <p className="text-white/60 mb-1 text-sm">Positive Sentiment</p>
+            <p className="text-3xl font-bold text-white mb-1">{metrics.positive_sentiment_pct}%</p>
+            <p className="text-green-400 text-sm font-medium">↑ +3.1%</p>
           </div>
         </div>
 
         {/* Charts Row 1 */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-slide-in" style={{ animationDelay: '0.2s' }}>
           {/* Sentiment Trend Chart */}
-          <div id="DashboardChart1" className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-            <h3 className="text-gray-900 mb-4">Sentiment Trend</h3>
+          <div id="DashboardChart1" className="glass-effect-strong rounded-3xl border border-white/10 p-6 shadow-xl hover-lift">
+            <h3 className="text-white font-semibold mb-4 text-lg">Sentiment Trend</h3>
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={metrics.sentiment_trend}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                <XAxis dataKey="date" stroke="#6B7280" />
-                <YAxis stroke="#6B7280" />
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                <XAxis dataKey="date" stroke="rgba(255,255,255,0.6)" />
+                <YAxis stroke="rgba(255,255,255,0.6)" />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: 'white',
-                    border: '1px solid #E5E7EB',
-                    borderRadius: '8px',
+                    backgroundColor: 'rgba(0,0,0,0.8)',
+                    border: '1px solid rgba(255,255,255,0.2)',
+                    borderRadius: '12px',
+                    backdropFilter: 'blur(10px)',
+                    color: '#fff',
                   }}
                 />
-                <Legend />
-                <Line type="monotone" dataKey="positive" stroke="#10B981" strokeWidth={2} name="Positive" />
-                <Line type="monotone" dataKey="neutral" stroke="#6B7280" strokeWidth={2} name="Neutral" />
-                <Line type="monotone" dataKey="negative" stroke="#EF4444" strokeWidth={2} name="Negative" />
+                <Legend wrapperStyle={{ color: '#fff' }} />
+                <Line type="monotone" dataKey="positive" stroke="#10B981" strokeWidth={3} name="Positive" dot={{ fill: '#10B981', r: 4 }} />
+                <Line type="monotone" dataKey="neutral" stroke="#6B7280" strokeWidth={3} name="Neutral" dot={{ fill: '#6B7280', r: 4 }} />
+                <Line type="monotone" dataKey="negative" stroke="#EF4444" strokeWidth={3} name="Negative" dot={{ fill: '#EF4444', r: 4 }} />
               </LineChart>
             </ResponsiveContainer>
           </div>
 
           {/* Intent Distribution Chart */}
-          <div id="DashboardChart2" className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-            <h3 className="text-gray-900 mb-4">Intent Distribution</h3>
+          <div id="DashboardChart2" className="glass-effect-strong rounded-3xl border border-white/10 p-6 shadow-xl hover-lift">
+            <h3 className="text-white font-semibold mb-4 text-lg">Intent Distribution</h3>
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
                 <Pie
@@ -173,31 +182,41 @@ export function Dashboard() {
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
-                <Tooltip />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: 'rgba(0,0,0,0.8)',
+                    border: '1px solid rgba(255,255,255,0.2)',
+                    borderRadius: '12px',
+                    backdropFilter: 'blur(10px)',
+                    color: '#fff',
+                  }}
+                />
               </PieChart>
             </ResponsiveContainer>
           </div>
         </div>
 
         {/* Compliance Heatmap */}
-        <div id="DashboardChart3" className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-          <h3 className="text-gray-900 mb-4">Compliance Alerts Heatmap</h3>
+        <div id="DashboardChart3" className="glass-effect-strong rounded-3xl border border-white/10 p-6 shadow-xl hover-lift animate-slide-in" style={{ animationDelay: '0.3s' }}>
+          <h3 className="text-white font-semibold mb-4 text-lg">Compliance Alerts Heatmap</h3>
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={metrics.compliance_heatmap}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-              <XAxis dataKey="day" stroke="#6B7280" />
-              <YAxis stroke="#6B7280" />
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+              <XAxis dataKey="day" stroke="rgba(255,255,255,0.6)" />
+              <YAxis stroke="rgba(255,255,255,0.6)" />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: 'white',
-                  border: '1px solid #E5E7EB',
-                  borderRadius: '8px',
+                  backgroundColor: 'rgba(0,0,0,0.8)',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  borderRadius: '12px',
+                  backdropFilter: 'blur(10px)',
+                  color: '#fff',
                 }}
               />
-              <Legend />
-              <Line type="monotone" dataKey="gdpr" stroke="#3B82F6" strokeWidth={2} name="GDPR" />
-              <Line type="monotone" dataKey="financial" stroke="#F59E0B" strokeWidth={2} name="Financial" />
-              <Line type="monotone" dataKey="pii" stroke="#EF4444" strokeWidth={2} name="PII" />
+              <Legend wrapperStyle={{ color: '#fff' }} />
+              <Line type="monotone" dataKey="gdpr" stroke="#3B82F6" strokeWidth={3} name="GDPR" dot={{ fill: '#3B82F6', r: 4 }} />
+              <Line type="monotone" dataKey="financial" stroke="#F59E0B" strokeWidth={3} name="Financial" dot={{ fill: '#F59E0B', r: 4 }} />
+              <Line type="monotone" dataKey="pii" stroke="#EF4444" strokeWidth={3} name="PII" dot={{ fill: '#EF4444', r: 4 }} />
             </LineChart>
           </ResponsiveContainer>
         </div>
