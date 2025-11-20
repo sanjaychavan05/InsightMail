@@ -12,27 +12,27 @@ export function AnalysisCard({ id, title, content, type = 'default' }: AnalysisC
     switch (type) {
       case 'success':
         return {
-          badge: 'bg-green-500/20 text-green-300 border-green-500/30',
+          badge: 'bg-green-100 text-green-700 border-green-200',
           icon: <CheckCircle className="w-4 h-4" />,
         };
       case 'warning':
         return {
-          badge: 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30',
+          badge: 'bg-yellow-100 text-yellow-700 border-yellow-200',
           icon: <AlertTriangle className="w-4 h-4" />,
         };
       case 'danger':
         return {
-          badge: 'bg-red-500/20 text-red-300 border-red-500/30',
+          badge: 'bg-red-100 text-red-700 border-red-200',
           icon: <AlertCircle className="w-4 h-4" />,
         };
       case 'info':
         return {
-          badge: 'bg-blue-500/20 text-blue-300 border-blue-500/30',
+          badge: 'bg-blue-100 text-blue-700 border-blue-200',
           icon: <Info className="w-4 h-4" />,
         };
       default:
         return {
-          badge: 'bg-purple-500/20 text-purple-300 border-purple-500/30',
+          badge: 'bg-gray-100 text-gray-700 border-gray-200',
           icon: null,
         };
     }
@@ -41,8 +41,8 @@ export function AnalysisCard({ id, title, content, type = 'default' }: AnalysisC
   const styles = getTypeStyles();
 
   return (
-    <div id={id} className="glass-effect rounded-2xl border border-white/10 p-6 shadow-xl hover-lift">
-      <h3 className="text-white font-semibold mb-3">{title}</h3>
+    <div id={id} className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+      <h3 className="text-gray-900 mb-3">{title}</h3>
       
       {Array.isArray(content) ? (
         <div className="space-y-2">

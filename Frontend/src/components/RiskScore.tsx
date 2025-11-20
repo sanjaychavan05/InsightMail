@@ -3,47 +3,52 @@ import { AlertTriangle, TrendingUp } from 'lucide-react';
 interface RiskScoreProps {
   score: number;
   breakdown: {
-    emotionIntensity: number;
-    priority: number;
-    complianceRisk: number;
-    escalationLikelihood: number;
+    legal_risk: number;
+    financial_risk: number;
+    reputational_risk: number;
+    operational_risk: number;
   };
 }
 
 export function RiskScore({ score, breakdown }: RiskScoreProps) {
   const getRiskLevel = () => {
-    if (score >= 8) return { label: 'Critical', color: 'text-red-400', bg: 'bg-red-500/20', border: 'border-red-500/30', gradient: 'from-red-500 to-orange-500' };
-    if (score >= 6) return { label: 'High', color: 'text-orange-400', bg: 'bg-orange-500/20', border: 'border-orange-500/30', gradient: 'from-orange-500 to-yellow-500' };
-    if (score >= 4) return { label: 'Medium', color: 'text-yellow-400', bg: 'bg-yellow-500/20', border: 'border-yellow-500/30', gradient: 'from-yellow-500 to-green-500' };
-    return { label: 'Low', color: 'text-green-400', bg: 'bg-green-500/20', border: 'border-green-500/30', gradient: 'from-green-500 to-emerald-500' };
+    if (score >= 0.8) return { label: 'Critical', color: 'text-red-600', bg: 'bg-red-50', border: 'border-red-200' };
+    if (score >= 0.6) return { label: 'High', color: 'text-orange-600', bg: 'bg-orange-50', border: 'border-orange-200' };
+    if (score >= 0.4) return { label: 'Medium', color: 'text-yellow-600', bg: 'bg-yellow-50', border: 'border-yellow-200' };
+    return { label: 'Low', color: 'text-green-600', bg: 'bg-green-50', border: 'border-green-200' };
   };
 
   const riskLevel = getRiskLevel();
-  const percentage = (score / 10) * 100;
+  const percentage = score * 100;
 
   return (
-    <div id="RiskScoreCard" className={`glass-effect rounded-3xl border ${riskLevel.border} p-6 shadow-xl hover-lift`}>
+    <div id="RiskScoreCard" className={`bg-white rounded-xl border-2 ${riskLevel.border} p-6 shadow-lg`}>
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-3">
-          <div className={`w-12 h-12 ${riskLevel.bg} rounded-xl flex items-center justify-center border ${riskLevel.border}`}>
+          <div className={`w-12 h-12 ${riskLevel.bg} rounded-lg flex items-center justify-center`}>
             <AlertTriangle className={`w-6 h-6 ${riskLevel.color}`} />
           </div>
           <div>
-            <h3 className="text-white font-semibold">Risk Score</h3>
-            <p className={`${riskLevel.color} font-medium`}>{riskLevel.label} Risk</p>
+            <h3 className="text-gray-900">Risk Score</h3>
+            <p className={`${riskLevel.color}`}>{riskLevel.label} Risk</p>
           </div>
         </div>
         <div className="text-right">
-          <div className={`text-3xl font-bold ${riskLevel.color}`}>{score.toFixed(1)}</div>
-          <p className="text-white/60 text-sm">out of 10</p>
+          <div className={`text-3xl font-bold ${riskLevel.color}`}>{(score * 100).toFixed(0)}%</div>
+          <p className="text-sm text-gray-500">Risk Level</p>
         </div>
       </div>
 
       {/* Progress Bar */}
       <div className="mb-4">
-        <div className="w-full bg-white/10 rounded-full h-3 overflow-hidden">
+        <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
           <div 
-            className={`h-full transition-all duration-500 bg-gradient-to-r ${riskLevel.gradient} shadow-lg`}
+            className={`h-full transition-all duration-500 ${
+              score >= 0.8 ? 'bg-red-600' :
+              score >= 0.6 ? 'bg-orange-500' :
+              score >= 0.4 ? 'bg-yellow-500' :
+              'bg-green-500'
+            }`}
             style={{ width: `${percentage}%` }}
           />
         </div>
@@ -51,57 +56,57 @@ export function RiskScore({ score, breakdown }: RiskScoreProps) {
 
       {/* Breakdown */}
       <div className="space-y-3">
-        <p className="text-white/80 font-medium">Risk Breakdown:</p>
+        <p className="text-sm font-medium text-gray-700">Risk Breakdown:</p>
         
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1">
-            <div className="flex items-center justify-between">
-              <span className="text-white/60 text-sm">Emotion Intensity</span>
-              <span className="text-blue-400 font-semibold">{breakdown.emotionIntensity}/10</span>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-gray-600">Legal Risk</span>
+              <span className="font-medium text-gray-900">{(breakdown.legal_risk * 100).toFixed(0)}%</span>
             </div>
-            <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden">
+            <div className="w-full bg-gray-200 rounded-full h-1.5">
               <div 
-                className="h-full bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full transition-all shadow-lg"
-                style={{ width: `${(breakdown.emotionIntensity / 10) * 100}%` }}
+                className="h-full bg-blue-500 rounded-full transition-all"
+                style={{ width: `${breakdown.legal_risk * 100}%` }}
               />
             </div>
           </div>
 
           <div className="space-y-1">
-            <div className="flex items-center justify-between">
-              <span className="text-white/60 text-sm">Priority</span>
-              <span className="text-purple-400 font-semibold">{breakdown.priority}/10</span>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-gray-600">Financial Risk</span>
+              <span className="font-medium text-gray-900">{(breakdown.financial_risk * 100).toFixed(0)}%</span>
             </div>
-            <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden">
+            <div className="w-full bg-gray-200 rounded-full h-1.5">
               <div 
-                className="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full transition-all shadow-lg"
-                style={{ width: `${(breakdown.priority / 10) * 100}%` }}
+                className="h-full bg-purple-500 rounded-full transition-all"
+                style={{ width: `${breakdown.financial_risk * 100}%` }}
               />
             </div>
           </div>
 
           <div className="space-y-1">
-            <div className="flex items-center justify-between">
-              <span className="text-white/60 text-sm">Compliance Risk</span>
-              <span className="text-orange-400 font-semibold">{breakdown.complianceRisk}/10</span>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-gray-600">Reputational Risk</span>
+              <span className="font-medium text-gray-900">{(breakdown.reputational_risk * 100).toFixed(0)}%</span>
             </div>
-            <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden">
+            <div className="w-full bg-gray-200 rounded-full h-1.5">
               <div 
-                className="h-full bg-gradient-to-r from-orange-500 to-yellow-500 rounded-full transition-all shadow-lg"
-                style={{ width: `${(breakdown.complianceRisk / 10) * 100}%` }}
+                className="h-full bg-orange-500 rounded-full transition-all"
+                style={{ width: `${breakdown.reputational_risk * 100}%` }}
               />
             </div>
           </div>
 
           <div className="space-y-1">
-            <div className="flex items-center justify-between">
-              <span className="text-white/60 text-sm">Escalation Risk</span>
-              <span className="text-red-400 font-semibold">{breakdown.escalationLikelihood}/10</span>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-gray-600">Operational Risk</span>
+              <span className="font-medium text-gray-900">{(breakdown.operational_risk * 100).toFixed(0)}%</span>
             </div>
-            <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden">
+            <div className="w-full bg-gray-200 rounded-full h-1.5">
               <div 
-                className="h-full bg-gradient-to-r from-red-500 to-pink-500 rounded-full transition-all shadow-lg"
-                style={{ width: `${(breakdown.escalationLikelihood / 10) * 100}%` }}
+                className="h-full bg-red-500 rounded-full transition-all"
+                style={{ width: `${breakdown.operational_risk * 100}%` }}
               />
             </div>
           </div>
@@ -109,11 +114,11 @@ export function RiskScore({ score, breakdown }: RiskScoreProps) {
       </div>
 
       {/* Manager Insight */}
-      {score >= 7 && (
-        <div className="mt-4 flex items-start gap-2 p-4 bg-amber-500/10 border border-amber-500/30 rounded-2xl backdrop-blur-sm">
-          <TrendingUp className="w-5 h-5 text-amber-400 mt-0.5 flex-shrink-0" />
-          <p className="text-amber-200">
-            <span className="font-semibold">Manager Alert:</span> This email requires immediate attention and potential escalation to senior support.
+      {score >= 0.7 && (
+        <div className="mt-4 flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+          <TrendingUp className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
+          <p className="text-amber-800">
+            <span className="font-medium">Manager Alert:</span> This email requires immediate attention and potential escalation to senior support.
           </p>
         </div>
       )}

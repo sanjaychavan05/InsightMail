@@ -51,11 +51,9 @@ export function SettingsPage() {
 
   if (loading) {
     return (
-      <div className="h-full p-8">
-        <div className="max-w-4xl mx-auto flex items-center justify-center h-full">
-          <div className="glass-effect-strong rounded-3xl p-12 text-center">
-            <p className="text-white/60">Loading settings...</p>
-          </div>
+      <div className="h-full p-8 bg-gray-50">
+        <div className="max-w-4xl mx-auto">
+          <p className="text-center text-gray-500">Loading settings...</p>
         </div>
       </div>
     );
@@ -63,56 +61,53 @@ export function SettingsPage() {
 
   if (!settings) {
     return (
-      <div className="h-full p-8">
-        <div className="max-w-4xl mx-auto flex items-center justify-center h-full">
-          <div className="glass-effect-strong rounded-3xl p-12 text-center border border-red-500/30">
-            <p className="text-red-400">Failed to load settings</p>
-          </div>
+      <div className="h-full p-8 bg-gray-50">
+        <div className="max-w-4xl mx-auto">
+          <p className="text-center text-gray-500">Failed to load settings</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="h-full p-8">
+    <div className="h-full p-8 bg-gray-50">
       <div className="max-w-4xl mx-auto space-y-6">
-        <div className="mb-8 animate-slide-in">
-          <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-purple-400 via-blue-400 to-cyan-400 bg-clip-text text-transparent">Settings</h1>
-          <p className="text-white/60">Configure your InsightMail AI preferences</p>
+        <div>
+          <h1 className="text-gray-900">Settings</h1>
+          <p className="text-gray-500">Configure your InsightMail AI preferences</p>
         </div>
 
-        {/* API Configuration */}
-        <div className="glass-effect-strong rounded-3xl border border-white/10 p-6 shadow-xl space-y-4 animate-slide-in" style={{ animationDelay: '0.1s' }}>
+        {/* RAG Settings */}
+        <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm space-y-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
-              <Database className="w-5 h-5 text-white" />
-            </div>
-            <h3 className="text-white font-semibold">API Configuration</h3>
+            <Database className="w-5 h-5 text-gray-600" />
+            <h3 className="text-gray-900">RAG Configuration</h3>
           </div>
           <div className="space-y-4">
-            <div>
-              <Label htmlFor="api-endpoint" className="text-white/80">API Endpoint</Label>
-              <Input
-                id="api-endpoint"
-                type="text"
-                placeholder="https://api.example.com/analyze"
-                value={settings.api_endpoint}
-                onChange={(e) => updateSetting('api_endpoint', e.target.value)}
-                className="mt-2 bg-white/5 border-white/10 text-white placeholder:text-white/40 focus:border-purple-500"
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label htmlFor="enable-rag">Enable RAG</Label>
+                <p className="text-gray-500">Use knowledge base context for analysis</p>
+              </div>
+              <Switch 
+                id="enable-rag" 
+                checked={settings.enable_rag}
+                onCheckedChange={(checked) => updateSetting('enable_rag', checked)}
               />
             </div>
             <div>
-              <Label htmlFor="api-key" className="text-white/80">API Key</Label>
+              <Label htmlFor="rag-top-k">Top K Results</Label>
               <Input
-                id="api-key"
-                type="password"
-                placeholder="Enter your API key"
-                value={settings.api_key}
-                onChange={(e) => updateSetting('api_key', e.target.value)}
+                id="rag-top-k"
+                type="number"
+                min={1}
+                max={10}
+                value={settings.rag_top_k}
+                onChange={(e) => updateSetting('rag_top_k', parseInt(e.target.value))}
                 className="mt-1"
               />
               <p className="text-gray-500 mt-1">
-                Your API key is encrypted and stored securely
+                Number of relevant documents to retrieve
               </p>
             </div>
           </div>
@@ -127,111 +122,73 @@ export function SettingsPage() {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label htmlFor="auto-analyze">Auto-analyze emails</Label>
-                <p className="text-gray-500">Automatically analyze emails as they arrive</p>
+                <Label htmlFor="enable-compliance">Compliance Check</Label>
+                <p className="text-gray-500">Detect compliance issues in emails</p>
               </div>
               <Switch 
-                id="auto-analyze" 
-                checked={settings.auto_analyze}
-                onCheckedChange={(checked) => updateSetting('auto_analyze', checked)}
+                id="enable-compliance" 
+                checked={settings.enable_compliance_check}
+                onCheckedChange={(checked) => updateSetting('enable_compliance_check', checked)}
               />
             </div>
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label htmlFor="sentiment-detection">Enhanced sentiment detection</Label>
-                <p className="text-gray-500">Use advanced AI models for better accuracy</p>
+                <Label htmlFor="enable-emotion">Emotion Analysis</Label>
+                <p className="text-gray-500">Analyze emotional tone of emails</p>
               </div>
               <Switch 
-                id="sentiment-detection" 
-                checked={settings.enhanced_sentiment}
-                onCheckedChange={(checked) => updateSetting('enhanced_sentiment', checked)}
+                id="enable-emotion" 
+                checked={settings.enable_emotion_analysis}
+                onCheckedChange={(checked) => updateSetting('enable_emotion_analysis', checked)}
               />
             </div>
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label htmlFor="action-items">Extract action items</Label>
-                <p className="text-gray-500">Automatically identify tasks from emails</p>
+                <Label htmlFor="enable-smart-reply">Smart Reply</Label>
+                <p className="text-gray-500">Generate suggested responses</p>
               </div>
               <Switch 
-                id="action-items" 
-                checked={settings.extract_action_items}
-                onCheckedChange={(checked) => updateSetting('extract_action_items', checked)}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Notifications */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm space-y-4">
-          <div className="flex items-center gap-3">
-            <Bell className="w-5 h-5 text-gray-600" />
-            <h3 className="text-gray-900">Notifications</h3>
-          </div>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label htmlFor="high-urgency">High urgency alerts</Label>
-                <p className="text-gray-500">Get notified for high-priority emails</p>
-              </div>
-              <Switch 
-                id="high-urgency" 
-                checked={settings.high_urgency_alerts}
-                onCheckedChange={(checked) => updateSetting('high_urgency_alerts', checked)}
-              />
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label htmlFor="compliance-alerts">Compliance alerts</Label>
-                <p className="text-gray-500">Receive notifications for compliance issues</p>
-              </div>
-              <Switch 
-                id="compliance-alerts" 
-                checked={settings.compliance_alerts}
-                onCheckedChange={(checked) => updateSetting('compliance_alerts', checked)}
-              />
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label htmlFor="daily-summary">Daily summary</Label>
-                <p className="text-gray-500">Get a daily digest of email analytics</p>
-              </div>
-              <Switch 
-                id="daily-summary" 
-                checked={settings.daily_summary}
-                onCheckedChange={(checked) => updateSetting('daily_summary', checked)}
+                id="enable-smart-reply" 
+                checked={settings.enable_smart_reply}
+                onCheckedChange={(checked) => updateSetting('enable_smart_reply', checked)}
               />
             </div>
           </div>
         </div>
 
-        {/* Privacy & Security */}
+        {/* LLM Settings */}
         <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm space-y-4">
           <div className="flex items-center gap-3">
-            <Shield className="w-5 h-5 text-gray-600" />
-            <h3 className="text-gray-900">Privacy & Security</h3>
+            <Settings className="w-5 h-5 text-gray-600" />
+            <h3 className="text-gray-900">LLM Configuration</h3>
           </div>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label htmlFor="data-retention">Data retention (30 days)</Label>
-                <p className="text-gray-500">Automatically delete analyzed emails after 30 days</p>
-              </div>
-              <Switch 
-                id="data-retention" 
-                checked={settings.data_retention_days === 30}
-                onCheckedChange={(checked) => updateSetting('data_retention_days', checked ? 30 : 0)}
+          <div className="space-y-3">
+            <div>
+              <Label htmlFor="llm-model">Model Name</Label>
+              <Input
+                id="llm-model"
+                type="text"
+                placeholder="gemma:2b"
+                value={settings.llm_model}
+                onChange={(e) => updateSetting('llm_model', e.target.value)}
+                className="mt-1"
               />
             </div>
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label htmlFor="anonymize">Anonymize sensitive data</Label>
-                <p className="text-gray-500">Remove PII from stored email data</p>
-              </div>
-              <Switch 
-                id="anonymize" 
-                checked={settings.anonymize_pii}
-                onCheckedChange={(checked) => updateSetting('anonymize_pii', checked)}
+            <div>
+              <Label htmlFor="llm-temperature">Temperature</Label>
+              <Input
+                id="llm-temperature"
+                type="number"
+                min={0}
+                max={1}
+                step={0.1}
+                value={settings.llm_temperature}
+                onChange={(e) => updateSetting('llm_temperature', parseFloat(e.target.value))}
+                className="mt-1"
               />
+              <p className="text-gray-500 mt-1">
+                Controls randomness (0=focused, 1=creative)
+              </p>
             </div>
           </div>
         </div>
