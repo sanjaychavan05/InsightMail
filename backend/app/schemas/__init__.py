@@ -15,11 +15,11 @@ class AnalyzeRequest(BaseModel):
 
 
 class RiskBreakdown(BaseModel):
-    """Risk score breakdown"""
-    legal_risk: float = Field(0.0, ge=0.0, le=1.0)
-    financial_risk: float = Field(0.0, ge=0.0, le=1.0)
-    reputational_risk: float = Field(0.0, ge=0.0, le=1.0)
-    operational_risk: float = Field(0.0, ge=0.0, le=1.0)
+    """Risk score breakdown (0-100 scale)"""
+    emotion_intensity: float = Field(0.0, ge=0.0, le=100.0, description="Emotional intensity score")
+    priority: float = Field(0.0, ge=0.0, le=100.0, description="Priority/urgency score")
+    compliance_risk: float = Field(0.0, ge=0.0, le=100.0, description="Compliance risk score")
+    escalation_likelihood: float = Field(0.0, ge=0.0, le=100.0, description="Likelihood of escalation")
 
 
 class RAGContext(BaseModel):
@@ -38,7 +38,7 @@ class AnalyzeResponse(BaseModel):
     compliance_flags: List[str] = []
     summary: str
     action_items: List[str] = []
-    risk_score: float = Field(..., ge=0.0, le=1.0)
+    risk_score: float = Field(..., ge=0.0, le=100.0, description="Overall risk score (0-100)")
     risk_breakdown: Dict[str, float]
     smart_reply: str
     rag_context_used: List[Dict[str, Any]] = []
