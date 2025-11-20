@@ -6,7 +6,6 @@ import { AnalysisCard } from './AnalysisCard';
 import { SmartReply } from './SmartReply';
 import { LoadingOverlay } from './LoadingOverlay';
 import { RiskScore } from './RiskScore';
-import { EmotionInsight } from './EmotionInsight';
 import { analyzeEmail as analyzeEmailAPI } from '../services/api';
 import { toast } from 'sonner';
 
@@ -118,7 +117,7 @@ export function EmailAnalyzer() {
                   Analyze Email
                 </Button>
                 <p className="text-center text-gray-400">
-                  Powered by AI · Response time ~3–5 seconds
+                  Powered by AI  
                 </p>
               </div>
             </div>
@@ -159,8 +158,6 @@ export function EmailAnalyzer() {
                     content={analysisResult.emotion}
                     type="warning"
                   />
-
-                  <EmotionInsight insight={analysisResult.emotionInsight} />
 
                   <AnalysisCard
                     id="UrgencyCard"
