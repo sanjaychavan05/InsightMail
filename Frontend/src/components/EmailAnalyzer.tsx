@@ -47,6 +47,10 @@ export function EmailAnalyzer() {
         tone: selectedTone,
       });
 
+      console.log('API Response:', result);
+      console.log('Compliance Flags:', result.compliance_flags);
+      console.log('Action Items:', result.action_items);
+
       // Map API response to frontend format
       const analysisData: AnalysisResult = {
         intent: result.intent,
@@ -66,6 +70,10 @@ export function EmailAnalyzer() {
         },
         ragContextUsed: result.rag_context_used,
       };
+
+      console.log('Mapped Analysis Data:', analysisData);
+      console.log('Mapped Compliance Flags:', analysisData.complianceFlags);
+      console.log('Mapped Action Items:', analysisData.actionItems);
 
       setAnalysisResult(analysisData);
       toast.success('Email analyzed successfully');

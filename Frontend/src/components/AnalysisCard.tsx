@@ -45,17 +45,23 @@ export function AnalysisCard({ id, title, content, type = 'default' }: AnalysisC
       <h3 className="text-gray-900 mb-3">{title}</h3>
       
       {Array.isArray(content) ? (
-        <div className="space-y-2">
-          {content.map((item, index) => (
-            <div
-              key={index}
-              className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border ${styles.badge} mr-2 mb-2`}
-            >
-              {styles.icon}
-              <span>{item}</span>
-            </div>
-          ))}
-        </div>
+        content.length > 0 ? (
+          <div className="space-y-2">
+            {content.map((item, index) => (
+              <div
+                key={index}
+                className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border ${styles.badge} mr-2 mb-2`}
+              >
+                {styles.icon}
+                <span>{item}</span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-sm text-gray-500 italic">
+            No items found
+          </div>
+        )
       ) : (
         <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border ${styles.badge}`}>
           {styles.icon}

@@ -232,7 +232,15 @@ Respond with ONLY the email reply text, no subject line or formatting."""
         risk_data = {"overall_risk": 0.0, "legal_risk": 0.0, "financial_risk": 0.0, 
                      "reputational_risk": 0.0, "operational_risk": 0.0}
         if enable_risk:
-            risk_data = await self._score_risk(email, rag_context_str)
+            risk_data = await self._score_risk(email, rag_context_str, emotion_data.get("emotion", "Neutral"), urgency, compliance_flags)
+        
+        # Calculate risk breakdown in frontend expected format (0-100 scale)
+        emotion_intensity = self._calculate_emotion_intensity(emotion_data.get("emotion", "Neutral"))
+        priority = self._calculate_priority_score(urgency)
+        compliance_risk = min(len(compliance_flags) * 20, 100)
+        
+        # Calculate overall risk score (0-100)
+        overall_risk = (emotion_intensity + priority + compliance_risk + (risk_data.get("overall_risk", 0.0) * 100)) / 4
         
         # Step 9: Smart reply generation
         smart_reply = ""
@@ -251,12 +259,12 @@ Respond with ONLY the email reply text, no subject line or formatting."""
             "compliance_flags": compliance_flags,
             "summary": summary,
             "action_items": action_items,
-            "risk_score": risk_data.get("overall_risk", 0.0),
+            "risk_score": round(overall_risk, 1),
             "risk_breakdown": {
-                "legal_risk": risk_data.get("legal_risk", 0.0),
-                "financial_risk": risk_data.get("financial_risk", 0.0),
-                "reputational_risk": risk_data.get("reputational_risk", 0.0),
-                "operational_risk": risk_data.get("operational_risk", 0.0)
+                "emotion_intensity": round(emotion_intensity, 1),
+                "priority": round(priority, 1),
+                "compliance_risk": round(compliance_risk, 1),
+                "escalation_likelihood": round((emotion_intensity + priority) / 2, 1)
             },
             "smart_reply": smart_reply,
             "rag_context_used": rag_context_items
@@ -275,9 +283,34 @@ Respond with ONLY the email reply text, no subject line or formatting."""
         """Analyze emotional tone"""
         prompt = self.EMOTION_PROMPT.format(email=email, rag_context=rag_context)
         result = await llm_service.generate_json(prompt)
+        
         if result and "emotion" in result:
             return result
-        return {"emotion": "Neutral", "reason": "Unable to determine emotion"}
+        
+        # Fallback: Try simple text extraction
+        logger.warning("JSON parsing failed for emotion, trying text-based extraction")
+        simple_prompt = f"""Analyze the emotion in this email in one word (e.g., Happy, Frustrated, Neutral, Angry, Concerned, Professional):
+
+Email: {email}
+
+Emotion:"""
+        emotion_text = await llm_service.generate(simple_prompt, temperature=0.3)
+        
+        if emotion_text:
+            emotion = emotion_text.strip().split('\n')[0].strip()
+            # Generate reason
+            reason_prompt = f"""Why does this email convey a {emotion} emotion? Answer in 1-2 sentences.
+
+Email: {email}
+
+Reason:"""
+            reason = await llm_service.generate(reason_prompt, temperature=0.5)
+            return {
+                "emotion": emotion if emotion else "Neutral",
+                "reason": reason.strip() if reason else f"The email's tone and word choice suggest a {emotion.lower()} sentiment."
+            }
+        
+        return {"emotion": "Neutral", "reason": "The email maintains a neutral, professional tone without strong emotional indicators."}
     
     async def _classify_urgency(self, email: str, rag_context: str) -> str:
         """Classify urgency level"""
@@ -293,8 +326,12 @@ Respond with ONLY the email reply text, no subject line or formatting."""
         """Check for compliance issues"""
         prompt = self.COMPLIANCE_PROMPT.format(email=email, rag_context=rag_context)
         result = await llm_service.generate_json(prompt)
+        logger.info(f"Compliance check result: {result}")
         if result and "compliance_flags" in result:
-            return result["compliance_flags"]
+            flags = result["compliance_flags"]
+            logger.info(f"Extracted compliance flags: {flags}")
+            return flags
+        logger.warning("No compliance flags found in LLM response")
         return []
     
     async def _generate_summary(self, email: str, rag_context: str) -> str:
@@ -307,11 +344,15 @@ Respond with ONLY the email reply text, no subject line or formatting."""
         """Extract action items"""
         prompt = self.ACTION_ITEMS_PROMPT.format(email=email, rag_context=rag_context)
         result = await llm_service.generate_json(prompt)
+        logger.info(f"Action items extraction result: {result}")
         if result and "action_items" in result:
-            return result["action_items"]
+            items = result["action_items"]
+            logger.info(f"Extracted action items: {items}")
+            return items
+        logger.warning("No action items found in LLM response")
         return []
     
-    async def _score_risk(self, email: str, rag_context: str) -> Dict[str, float]:
+    async def _score_risk(self, email: str, rag_context: str, emotion: str, urgency: str, compliance_flags: List[str]) -> Dict[str, float]:
         """Score various risk dimensions"""
         prompt = self.RISK_SCORING_PROMPT.format(email=email, rag_context=rag_context)
         result = await llm_service.generate_json(prompt)
@@ -330,6 +371,34 @@ Respond with ONLY the email reply text, no subject line or formatting."""
             "reputational_risk": 0.0,
             "operational_risk": 0.0
         }
+    
+    def _calculate_emotion_intensity(self, emotion: str) -> float:
+        """Calculate emotion intensity score (0-100)"""
+        emotion_scores = {
+            "angry": 90,
+            "frustrated": 75,
+            "upset": 70,
+            "concerned": 60,
+            "anxious": 65,
+            "worried": 60,
+            "disappointed": 55,
+            "neutral": 30,
+            "professional": 25,
+            "satisfied": 20,
+            "happy": 15,
+            "grateful": 10,
+            "pleased": 15
+        }
+        return emotion_scores.get(emotion.lower(), 50)
+    
+    def _calculate_priority_score(self, urgency: str) -> float:
+        """Calculate priority score based on urgency (0-100)"""
+        priority_map = {
+            "high": 90,
+            "medium": 50,
+            "low": 20
+        }
+        return priority_map.get(urgency.lower(), 50)
     
     async def _generate_smart_reply(
         self,
