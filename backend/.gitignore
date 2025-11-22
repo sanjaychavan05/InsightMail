@@ -50,3 +50,9 @@ Thumbs.db
 .pytest_cache/
 .coverage
 htmlcov/
+
+# Documentation
+SUCCESS.md
+INSTALLATION.md
+QUICKSTART.md
+
