@@ -1,643 +1,430 @@
-# InsightMail Backend API
+# InsightMail Backend
 
-FastAPI backend with Google Gemini AI integration for intelligent email analysis. Provides sentiment detection, compliance flagging, risk scoring, PII detection, and AI-generated smart replies with SQLite persistence.
+Complete FastAPI backend for InsightMail - AI-powered email analysis with RAG integration.
 
-## 🌟 Features
+## Features
 
-### Core Capabilities
-- **AI-Powered Email Analysis**: Multi-dimensional email analysis using Google Gemini
-  - Intent detection (action_required, informational, promotional, etc.)
-  - Emotion recognition (positive, negative, neutral, mixed)
-  - Urgency assessment (critical, high, medium, low)
-  - Compliance flagging (legal, regulatory, ethical issues)
-  
-- **Smart Reply Generation**: Context-aware response suggestions
-  - Multiple tone options: formal, empathetic, friendly, assertive
-  - Maintains conversation context
-  - Professional and natural language output
+✨ **Email Analysis Pipeline**
+- Intent detection
+- Emotion analysis with reasoning
+- Urgency classification
+- Compliance flag detection
+- Summary generation
+- Action item extraction
+- Risk scoring across multiple dimensions
+- Smart reply generation with tone control
 
-- **Risk Assessment**: Comprehensive risk scoring system
-  - Overall risk score (0-100)
-  - Detailed breakdown: compliance, urgency, pii, tone, anomaly scores
-  - Risk category classification
+🔍 **RAG (Retrieval-Augmented Generation)**
+- Vector similarity search using Ollama embeddings
+- Knowledge base for policies, FAQs, guidelines
+- Context-aware analysis using company knowledge
 
-- **PII Detection**: Identifies personally identifiable information
-  - Email addresses, phone numbers, SSNs
-  - Addresses, credit card numbers
-  - Flagging and masking capabilities
+🤖 **LLM Integration**
+- Ollama integration (gemma:2b model)
+- Nomic-embed-text for embeddings
+- Optimized prompts for enterprise email analysis
 
-- **Analytics Dashboard**: Aggregated metrics and trends
-  - Sentiment trends over time
-  - Intent distribution analysis
-  - Compliance issue heatmaps
+📊 **Analytics Dashboard**
+- Sentiment trends over time
+- Intent distribution
+- Compliance tracking
+- Urgency analysis
+- Risk metrics
 
-- **History Management**: Persistent storage of all analyses
-  - SQLite database with SQLAlchemy ORM
-  - Full analysis record retrieval
-  - Timestamp tracking
+⚙️ **Settings Management**
+- Configurable RAG parameters
+- Feature toggles
+- API configuration
 
-- **Mock Mode**: Development-friendly fallback
-  - Works without Gemini API key
-  - Deterministic sample responses
-  - Full endpoint functionality
+## Project Structure
 
-## 🛠️ Tech Stack
+```
+backend/
+├── app/
+│   ├── main.py              # FastAPI application entry point
+│   ├── core/
+│   │   └── config.py        # Configuration settings
+│   ├── db/
+│   │   ├── models.py        # SQLAlchemy models
+│   │   └── session.py       # Database session management
+│   ├── schemas/
+│   │   └── __init__.py      # Pydantic schemas
+│   ├── services/
+│   │   ├── llm_service.py   # Ollama LLM integration
+│   │   ├── rag_service.py   # RAG functionality
+│   │   └── pipeline.py      # Email analysis pipeline
+│   └── routers/
+│       ├── analyze.py       # Email analysis endpoint
+│       ├── history.py       # History retrieval
+│       ├── analytics.py     # Analytics dashboard
+│       ├── settings.py      # Settings management
+│       └── knowledge_base.py # RAG knowledge base
+├── sample_data/             # Sample RAG documents
+├── requirements.txt         # Python dependencies
+├── .env.example            # Environment variables template
+└── README.md               # This file
+```
 
-- **Framework**: FastAPI 0.104.1
-- **AI Model**: Google Gemini API (`gemini-pro` model)
-- **Database**: SQLite with SQLAlchemy 2.0.23 ORM
-- **Validation**: Pydantic v2.5.0
-- **Server**: Uvicorn (ASGI server)
-- **Environment**: python-dotenv for configuration
-- **Dependencies**: See `requirements.txt`
+## Prerequisites
 
-## 📋 Prerequisites
+1. **Python 3.9+**
+2. **Ollama** installed and running
+   - Download from: https://ollama.ai
+3. **Required Ollama Models**:
+   ```bash
+   ollama pull gemma:2b
+   ollama pull nomic-embed-text
+   ```
 
-- **Python** 3.10 or higher
-- **pip** (Python package manager)
-- **Google Gemini API Key** ([Get one here](https://makersuite.google.com/app/apikey))
-  - Optional for development (mock mode available)
+## Installation
 
-## Installation & Setup
-
-### 1. Clone and navigate to backend
+### 1. Clone and Navigate
 
 ```bash
 cd backend
 ```
 
-### 2. Create virtual environment
+### 2. Create Virtual Environment
 
 ```bash
 python -m venv venv
 
-# Windows (PowerShell)
-.\venv\Scripts\Activate.ps1
+# Windows
+venv\Scripts\activate
 
-# macOS/Linux
+# Linux/Mac
 source venv/bin/activate
 ```
 
-### 3. Install dependencies
+### 3. Install Dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 4. Configure environment
+### 4. Configure Environment
 
 ```bash
-# Copy the example env file
+# Copy example environment file
 cp .env.example .env
 
-# Edit .env and set your Gemini API key
-# GEMINI_API_KEY=your_actual_api_key_here
+# Edit .env with your settings (optional, defaults work fine)
 ```
 
-**Important**: If you don't have a Gemini API key, the backend will run in **mock mode** and return deterministic sample responses.
+### 5. Initialize Database
 
-### 5. Run the server
+The database will be automatically created on first run.
+
+## Running the Backend
+
+### Development Mode
 
 ```bash
-uvicorn main:app --reload --port 8000
+# From the backend directory
+cd app
+python -m uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-The API will be available at `http://localhost:8000`
+Or simply:
 
+```bash
+python app/main.py
+```
+
+The API will be available at:
+- **API**: http://localhost:8000
 - **Docs**: http://localhost:8000/docs (Swagger UI)
 - **ReDoc**: http://localhost:8000/redoc
 
-## 🔌 API Endpoints
+### Production Mode
 
-### POST `/analyze`
-Analyze an email and generate comprehensive insights.
+```bash
+uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 4
+```
 
-**Request Body:**
+## API Endpoints
+
+### Email Analysis
+
+**POST** `/api/analyze`
+
+Analyze email content with AI.
+
 ```json
 {
-  "email": "Email content here...",
-  "tone": "empathetic"  // Optional: formal, empathetic, friendly, assertive
+  "email": "Your email content here...",
+  "tone": "professional"
 }
 ```
 
-**Response:**
-```json
-{
-  "intent": "action_required",
-  "emotion": "positive",
-  "urgency": "high",
-  "compliance_issues": ["potential_gdpr_concern"],
-  "pii_detected": ["email@example.com"],
-  "risk_score": 42,
-  "risk_breakdown": {
-    "compliance": 30,
-    "urgency": 60,
-    "pii": 40,
-    "tone": 20,
-    "anomaly": 15
-  },
-  "smart_reply": "Thank you for reaching out...",
-  "analysis_summary": "This email requires immediate attention..."
-}
-```
+Response includes: intent, emotion, urgency, compliance flags, summary, action items, risk score, smart reply, and RAG context.
 
-### GET `/history`
+### History
+
+**GET** `/api/history?limit=50&offset=0`
+
 Retrieve past email analyses.
 
-**Query Parameters:**
-- `limit` (optional): Number of records to return (default: 50)
+### Analytics
 
-**Response:**
-```json
-[
-  {
-    "id": 1,
-    "email_text": "Original email content...",
-    "intent": "informational",
-    "emotion": "neutral",
-    "risk_score": 25,
-    "created_at": "2025-11-20T10:30:00"
-  }
-]
-```
+**GET** `/api/analytics?days=30`
 
-### POST `/history`
-Store a new analysis record.
+Get dashboard analytics including sentiment trends, intent distribution, compliance trends, and urgency over time.
 
-**Request Body:**
+### Settings
+
+**GET** `/api/settings`
+
+Get current settings.
+
+**POST** `/api/settings`
+
+Update settings.
+
 ```json
 {
-  "email_text": "Email content...",
-  "intent": "action_required",
-  "emotion": "positive",
-  "urgency": "high",
-  "compliance_issues": [],
-  "pii_detected": [],
-  "risk_score": 30,
-  "smart_reply": "Generated reply..."
-}
-```
-
-### GET `/dashboard`
-Get aggregated analytics and metrics.
-
-**Response:**
-```json
-{
-  "total_analyzed": 150,
-  "avg_risk_score": 35.7,
-  "sentiment_trend": [
-    {"date": "2025-11-15", "positive": 45, "negative": 10, "neutral": 20},
-    {"date": "2025-11-16", "positive": 50, "negative": 8, "neutral": 22}
-  ],
-  "intent_distribution": {
-    "action_required": 60,
-    "informational": 45,
-    "promotional": 30,
-    "support_request": 15
-  },
-  "compliance_heatmap": [
-    {"category": "gdpr", "count": 12},
-    {"category": "legal", "count": 5}
-  ]
-}
-```
-
-### GET `/settings`
-Retrieve current application settings.
-
-**Response:**
-```json
-{
-  "enable_pii_detection": true,
+  "enable_rag": true,
   "enable_compliance_check": true,
+  "enable_risk_scoring": true,
   "enable_smart_reply": true,
-  "default_reply_tone": "empathetic",
-  "risk_threshold": 70
+  "rag_top_k": 3,
+  "default_tone": "professional"
 }
 ```
 
-### POST `/settings`
-Update application settings.
+### Knowledge Base
 
-**Request Body:**
+**POST** `/api/kb/add`
+
+Add document to knowledge base.
+
 ```json
 {
-  "enable_pii_detection": true,
-  "enable_compliance_check": false,
-  "default_reply_tone": "formal",
-  "risk_threshold": 80
+  "title": "Email Communication Policy",
+  "content": "Full document content...",
+  "document_type": "policy",
+  "source": "HR Department"
 }
 ```
 
-## 📁 Project Structure
+**GET** `/api/kb/list`
 
-```
-backend/
-├── main.py                          # FastAPI application entry point
-│                                    # - CORS middleware configuration
-│                                    # - Router registration
-│                                    # - Database initialization
-│
-├── requirements.txt                 # Python dependencies
-├── .env.example                     # Environment variable template
-├── README.md                        # This file
-│
-├── data/
-│   └── insightmail.db              # SQLite database (auto-created)
-│
-└── app/
-    ├── api/                         # API route handlers
-    │   ├── analyze.py              # POST /analyze - Email analysis
-    │   ├── history.py              # GET/POST /history - Analysis records
-    │   ├── dashboard.py            # GET /dashboard - Analytics metrics
-    │   └── settings.py             # GET/POST /settings - App configuration
-    │
-    ├── db/                          # Database layer
-    │   ├── models.py               # SQLAlchemy ORM models
-    │   │                           # - AnalysisRecord (email analyses)
-    │   │                           # - Settings (app configuration)
-    │   └── session.py              # Database session factory & init
-    │
-    ├── lms/                         # LLM integration layer
-    │   ├── prompts.py              # Prompt templates for Gemini
-    │   │                           # - Intent, emotion, urgency prompts
-    │   │                           # - Compliance, PII detection
-    │   │                           # - Smart reply generation
-    │   └── gemini_client.py        # Gemini API wrapper
-    │                               # - JSON response parsing
-    │                               # - Mock mode fallback
-    │
-    ├── services/                    # Business logic layer
-    │   ├── pipeline.py             # Analysis orchestration
-    │   │                           # - Multi-step LLM pipeline
-    │   │                           # - Risk score calculation
-    │   │                           # - Result aggregation
-    │   └── utils.py                # Helper utilities
-    │                               # - Text cleaning
-    │                               # - PII masking
-    │                               # - JSON parsing
-    │
-    └── schemas/                     # Pydantic models
-        └── analysis.py             # Request/response schemas
-                                    # - AnalyzeRequest
-                                    # - AnalyzeResponse
-                                    # - HistoryRecord
-                                    # - DashboardMetrics
-```
+List all knowledge base documents.
 
-## 🔄 How It Works
+**DELETE** `/api/kb/{document_id}`
 
-### Email Analysis Pipeline
+Delete a knowledge base document.
 
-1. **Request Processing** (`api/analyze.py`)
-   - Receives email content and optional tone parameter
-   - Validates input with Pydantic schemas
+## Seeding Knowledge Base
 
-2. **Analysis Orchestration** (`services/pipeline.py`)
-   - Runs 7 sequential Gemini API calls:
-     1. Intent detection
-     2. Emotion analysis
-     3. Urgency assessment
-     4. Compliance checking
-     5. PII detection
-     6. Smart reply generation
-     7. Analysis summary
-
-3. **Risk Scoring** (`services/pipeline.py`)
-   - Calculates weighted risk score (0-100)
-   - Provides detailed breakdown:
-     - Compliance risk: 30%
-     - Urgency risk: 25%
-     - PII risk: 20%
-     - Tone risk: 15%
-     - Anomaly detection: 10%
-
-4. **Persistence** (`db/models.py`)
-   - Stores complete analysis in SQLite
-   - Tracks timestamp for history
-
-5. **Response** (`schemas/analysis.py`)
-   - Returns structured JSON response
-   - Includes all analysis dimensions
-
-### Mock Mode
-
-When `GEMINI_API_KEY` is not configured:
-- `gemini_client.py` automatically switches to mock mode
-- Returns deterministic sample responses
-- All endpoints remain functional
-- Useful for development and testing
-
-## 🧪 Development
-
-### Running in Development Mode
+To populate the knowledge base with sample documents:
 
 ```bash
-# With auto-reload on code changes
-uvicorn main:app --reload --port 8000
-
-# With custom host
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
+# From the backend directory
+python scripts/seed_knowledge_base.py
 ```
 
-### Testing with Swagger UI
+This will add sample policies and FAQs to improve RAG-powered analysis.
 
-1. Navigate to `http://localhost:8000/docs`
-2. Click "Try it out" on any endpoint
-3. Fill in request body
-4. Execute and view response
+## Configuration
 
-### Database Management
+### Environment Variables
 
-**View database:**
-```bash
-sqlite3 data/insightmail.db
-sqlite> .tables
-sqlite> SELECT * FROM analysis_records LIMIT 5;
-sqlite> .exit
-```
-
-**Reset database:**
-```bash
-rm data/insightmail.db
-# Restart server to recreate with fresh schema
-```
-
-**Backup database:**
-```bash
-cp data/insightmail.db data/backup_$(date +%Y%m%d).db
-```
-
-## 🚀 Frontend Integration
-
-### Configure React Frontend
-
-In your `Frontend/` directory, create `.env`:
+Edit `.env` file:
 
 ```env
-VITE_API_BASE_URL=http://localhost:8000
+# Database
+DATABASE_URL=sqlite:///./insightmail.db
+
+# Ollama
+OLLAMA_BASE_URL=http://localhost:11434
+OLLAMA_MODEL=gemma:2b
+OLLAMA_EMBEDDING_MODEL=nomic-embed-text
+OLLAMA_TIMEOUT=120
+
+# RAG
+RAG_TOP_K=3
+RAG_SIMILARITY_THRESHOLD=0.5
+
+# CORS
+CORS_ORIGINS=http://localhost:5173,http://localhost:3000
 ```
 
-Start the frontend:
+### Using PostgreSQL (Optional)
+
+To use PostgreSQL instead of SQLite:
+
+1. Install PostgreSQL driver:
+```bash
+pip install psycopg2-binary
+```
+
+2. Update `DATABASE_URL` in `.env`:
+```env
+DATABASE_URL=postgresql://username:password@localhost/insightmail
+```
+
+## Testing
+
+### Test with curl
 
 ```bash
-cd ../Frontend
-npm install
-npm run dev
+# Analyze email
+curl -X POST http://localhost:8000/api/analyze \
+  -H "Content-Type: application/json" \
+  -d '{"email": "This is urgent! We need to fix the security breach immediately.", "tone": "professional"}'
+
+# Get history
+curl http://localhost:8000/api/history
+
+# Get analytics
+curl http://localhost:8000/api/analytics
+
+# Add to knowledge base
+curl -X POST http://localhost:8000/api/kb/add \
+  -H "Content-Type: application/json" \
+  -d '{"title": "Test Policy", "content": "This is a test policy document.", "document_type": "policy"}'
 ```
 
-The frontend will be available at `http://localhost:5173` and will communicate with the backend API.
+### Test with Swagger UI
 
-### CORS Configuration
+Navigate to http://localhost:8000/docs for interactive API documentation.
 
-The backend is pre-configured for frontend CORS:
+## Troubleshooting
 
-```python
-# main.py
-origins = [
-    "http://localhost:5173",  # Vite dev server
-    "http://localhost:3000",  # Alternative port
-]
+### Ollama Not Running
+
+```bash
+# Check if Ollama is running
+curl http://localhost:11434/api/tags
+
+# Start Ollama (if not running)
+ollama serve
 ```
 
-For production, update `CORS_ORIGINS` in `.env`:
+### Models Not Found
+
+```bash
+# Pull required models
+ollama pull gemma:2b
+ollama pull nomic-embed-text
+
+# Verify models are installed
+ollama list
+```
+
+### Database Issues
+
+```bash
+# Delete and recreate database
+rm insightmail.db
+# Restart the application to recreate
+```
+
+### CORS Errors
+
+Add your frontend URL to `CORS_ORIGINS` in `.env`:
 
 ```env
-CORS_ORIGINS=https://your-frontend-domain.com
+CORS_ORIGINS=http://localhost:5173,http://localhost:3000,http://yourdomain.com
 ```
 
-## 🚢 Deployment
+## Performance Tips
 
-### Production Checklist
+1. **RAG Optimization**: Adjust `RAG_TOP_K` and `RAG_SIMILARITY_THRESHOLD` in settings
+2. **Model Selection**: Use `gemma:2b` for speed or `llama2:7b` for accuracy
+3. **Database**: Use PostgreSQL for production workloads
+4. **Caching**: Consider adding Redis for frequently accessed data
 
-- [ ] Set strong `GEMINI_API_KEY` in production environment
-- [ ] Configure production database URL (or keep SQLite for small-scale)
-- [ ] Update `CORS_ORIGINS` to your frontend domain
-- [ ] Set `DEBUG=False` if using custom debug flags
-- [ ] Use production ASGI server (gunicorn + uvicorn workers)
-- [ ] Enable HTTPS/TLS for API endpoints
-- [ ] Set up monitoring and logging
-- [ ] Configure rate limiting for API endpoints
-- [ ] Review and secure sensitive data handling
+## Production Deployment
 
-### Production Server Setup
-
-**Using Gunicorn with Uvicorn workers:**
-
-```bash
-pip install gunicorn
-
-gunicorn main:app \
-  --workers 4 \
-  --worker-class uvicorn.workers.UvicornWorker \
-  --bind 0.0.0.0:8000 \
-  --access-logfile - \
-  --error-logfile -
-```
-
-**Using Docker:**
+### Using Docker (Recommended)
 
 ```dockerfile
-FROM python:3.10-slim
+FROM python:3.11-slim
 
 WORKDIR /app
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . .
+COPY app ./app
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+EXPOSE 8000
+
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
 ```
 
-**Environment Variables for Production:**
-
-```env
-GEMINI_API_KEY=your_production_api_key
-DATABASE_URL=sqlite:///./data/insightmail.db  # or PostgreSQL URL
-CORS_ORIGINS=https://your-frontend.com,https://www.your-frontend.com
-```
-
-### Scaling Considerations
-
-**SQLite Limitations:**
-- Good for small-to-medium scale (< 100k requests/day)
-- Single-writer limitation
-- File-based storage
-
-**Migrate to PostgreSQL for production:**
+### Using systemd
 
 ```bash
-pip install psycopg2-binary
+# Create service file at /etc/systemd/system/insightmail.service
+[Unit]
+Description=InsightMail Backend
+After=network.target
 
-# Update DATABASE_URL in .env
-DATABASE_URL=postgresql://user:password@localhost:5432/insightmail
+[Service]
+User=www-data
+WorkingDirectory=/path/to/backend
+Environment="PATH=/path/to/venv/bin"
+ExecStart=/path/to/venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000
+
+[Install]
+WantedBy=multi-user.target
 ```
 
-**Caching:**
-- Consider Redis for frequently accessed data
-- Cache dashboard metrics
-- Rate limiting with Redis
+## Architecture
 
-**Load Balancing:**
-- Use nginx or cloud load balancer
-- Multiple uvicorn workers
-- Horizontal scaling with containerization
+### LLM Pipeline Flow
 
-## 🐛 Troubleshooting
+1. **RAG Context Retrieval**: Query embeddings → Vector search → Top-K relevant docs
+2. **Intent Detection**: LLM analyzes with RAG context
+3. **Emotion Analysis**: LLM identifies emotion + reasoning
+4. **Urgency Classification**: LLM determines priority level
+5. **Compliance Check**: LLM flags policy violations
+6. **Summary Generation**: LLM creates concise summary
+7. **Action Items**: LLM extracts actionable tasks
+8. **Risk Scoring**: LLM assesses multiple risk dimensions
+9. **Smart Reply**: LLM generates contextual response
+10. **Database Storage**: Save complete analysis
 
-### Gemini API Issues
+### RAG Implementation
 
-**Error: `404 models/gemini-1.5-flash is not found`**
-- **Solution**: Use `gemini-pro` model name (already configured)
-- Check API version compatibility
+- **Embedding Model**: nomic-embed-text (768 dimensions)
+- **Similarity Metric**: Cosine similarity
+- **Vector Storage**: JSON field in SQLite/PostgreSQL
+- **Retrieval**: Top-K most relevant documents above threshold
 
-**Error: `GEMINI_API_KEY not found`**
-- **Solution**: Ensure `.env` file exists with valid API key
-- Verify `load_dotenv()` is called in `gemini_client.py`
+## API Response Times
 
-**Error: Rate limiting / quota exceeded**
-- **Solution**: Implement request throttling
-- Consider upgrading API plan
-- Use mock mode for development
-
-### Database Issues
-
-**Error: `no such table: analysis_records`**
-- **Solution**: Delete `data/insightmail.db` and restart server
-- Database will be recreated with correct schema
-
-**Error: Database locked**
-- **Cause**: SQLite doesn't handle concurrent writes well
-- **Solution**: 
-  - Use connection pooling carefully
-  - Consider PostgreSQL for high concurrency
-  - Implement retry logic
-
-### CORS Issues
-
-**Error: `CORS policy: No 'Access-Control-Allow-Origin' header`**
-- **Solution**: Add frontend URL to `CORS_ORIGINS` in `.env`
-- Restart backend after changing environment variables
-
-### Performance Issues
-
-**Slow response times**
-- **Check**: Gemini API latency (7 sequential calls)
-- **Solution**: Implement request caching
-- **Solution**: Use async processing for non-critical analysis steps
-- **Consider**: Batch processing for multiple emails
-
-### Import Errors
-
-**Error: `ModuleNotFoundError: No module named 'app'`**
-- **Solution**: Run `uvicorn main:app` from backend directory
-- **Solution**: Ensure virtual environment is activated
-
-**Error: `ImportError: cannot import name 'load_dotenv'`**
-- **Solution**: `pip install python-dotenv`
-
-## 📊 API Response Codes
-
-| Code | Status | Description |
-|------|--------|-------------|
-| 200 | OK | Request successful |
-| 201 | Created | Resource created (POST /history) |
-| 400 | Bad Request | Invalid input data |
-| 404 | Not Found | Resource not found |
-| 422 | Unprocessable Entity | Validation error (Pydantic) |
-| 500 | Internal Server Error | Server-side error |
-
-## 🔒 Security Considerations
-
-### Data Privacy
-- PII is detected but not automatically redacted in storage
-- Consider implementing PII masking before database persistence
-- Review data retention policies
-
-### API Key Security
-- Never commit `.env` file to version control
-- Use environment variables in production
-- Rotate API keys periodically
-
-### Input Validation
-- All inputs validated with Pydantic schemas
-- SQL injection prevented by SQLAlchemy ORM
-- Consider rate limiting on analysis endpoint
-
-### CORS
-- Restrict `CORS_ORIGINS` to trusted domains only
-- Don't use `*` wildcard in production
-
-## 📖 Additional Resources
-
-- **FastAPI Documentation**: https://fastapi.tiangolo.com/
-- **Google Gemini API**: https://ai.google.dev/docs
-- **SQLAlchemy ORM**: https://docs.sqlalchemy.org/
-- **Pydantic**: https://docs.pydantic.dev/
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Make your changes
-4. Test thoroughly (including mock mode)
-5. Commit with descriptive messages
-6. Push to your branch
-7. Open a Pull Request
-
-## 📝 License
-
-This project is open source and available under the MIT License.
-
-## 💬 Support
-
-For issues, questions, or suggestions:
-- Open an issue on GitHub
-- Check existing documentation
-- Review troubleshooting section above
-
-## 🔗 Related Documentation
-
-- [Frontend README](../Frontend/README.md) - React frontend setup
-- [Main README](../README.md) - Full project overview
-- [INTEGRATION.md](./INTEGRATION.md) - Detailed integration guide
-
----
-
-**Built with FastAPI, Google Gemini AI, and SQLAlchemy**
-
-1. Set `GEMINI_API_KEY` in production environment
-2. Configure `CORS_ORIGINS` to include your frontend domain
-3. Use a production ASGI server (e.g., `gunicorn` with `uvicorn` workers)
-4. Consider migrating to PostgreSQL for production scale
-5. Enable HTTPS and secure your API key storage
-
-### Example production command
-
-```bash
-gunicorn main:app --workers 4 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000
-```
-
-## Troubleshooting
-
-**Issue**: `ModuleNotFoundError: No module named 'google.generativeai'`
-- **Fix**: Ensure you activated the virtual environment and ran `pip install -r requirements.txt`
-
-**Issue**: API returns 500 errors with Gemini calls
-- **Fix**: Check your `GEMINI_API_KEY` is valid. Test mock mode by unsetting the key.
-
-**Issue**: CORS errors in browser
-- **Fix**: Add your frontend origin to `CORS_ORIGINS` in `.env`
-
-**Issue**: Database locked errors
-- **Fix**: SQLite doesn't handle high concurrency well. For production, migrate to PostgreSQL.
+Typical response times (on M1 Mac):
+- Email Analysis: 10-30 seconds (depends on LLM model)
+- History Retrieval: <100ms
+- Analytics Generation: 100-500ms
+- Settings Operations: <50ms
+- Knowledge Base Operations: 100-300ms
 
 ## License
 
 MIT
 
+## Support
+
+For issues or questions:
+1. Check `/docs` endpoint for API documentation
+2. Review logs in console output
+3. Verify Ollama is running with correct models
+4. Check database connectivity
+
+## Contributing
+
+Contributions welcome! Areas for improvement:
+- Additional LLM model support
+- Enhanced prompt engineering
+- Advanced analytics visualizations
+- Performance optimizations
+- Additional RAG strategies
+
 ---
 
-**Questions?** Check the [FastAPI docs](https://fastapi.tiangolo.com/) or [Gemini API docs](https://ai.google.dev/docs).
+**Built with FastAPI, Ollama, and SQLAlchemy**

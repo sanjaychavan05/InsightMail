@@ -1,39 +1,49 @@
 # InsightMail - AI-Powered Email Analysis Platform
 
-InsightMail is a full-stack application that uses Google Gemini AI to analyze emails for sentiment, intent, compliance risks, and urgency while providing intelligent reply suggestions. The platform features a modern React frontend with real-time analytics and a FastAPI backend with SQLite persistence.
+InsightMail is a full-stack application that uses Ollama (Gemma 2B) AI to analyze emails for sentiment, intent, compliance risks, and urgency while providing intelligent reply suggestions. The platform features a modern React frontend with a unique dark glassmorphism UI, real-time analytics, and a FastAPI backend with SQLite persistence.
 
 ## 🌟 Key Features
 
-- **AI-Powered Email Analysis**: Leverages Google Gemini to detect intent, emotion, urgency, and compliance issues
-- **Smart Reply Generation**: Context-aware reply suggestions with multiple tone options (formal, empathetic, friendly, assertive)
-- **Risk Assessment**: Multi-dimensional risk scoring with detailed breakdown metrics
-- **PII Detection**: Identifies and flags personally identifiable information
-- **Analytics Dashboard**: Visual insights with sentiment trends, intent distribution, and compliance heatmaps
-- **History Tracking**: Persistent storage of all email analyses
-- **Mock Mode**: Fallback functionality when Gemini API is unavailable
+- **AI-Powered Email Analysis**: Leverages Ollama (Gemma 2B) to detect intent, emotion, urgency, and compliance issues with robust fallback for unparseable responses
+- **RAG (Retrieval-Augmented Generation)**: Vector similarity search using nomic-embed-text embeddings for context-aware analysis with company knowledge base
+- **Smart Reply Generation**: Context-aware reply suggestions with multiple tone options (formal, empathetic, friendly, assertive, professional)
+- **Risk Assessment**: Multi-dimensional risk scoring (0-100 scale) with detailed breakdown: emotion intensity, priority, compliance risk, escalation likelihood
+- **Action Item Extraction**: Automatically identifies actionable tasks from emails
+- **Compliance Detection**: Flags policy violations and compliance issues
+- **Analytics Dashboard**: Visual insights with sentiment trends, intent distribution, compliance heatmaps, and urgency analysis
+- **History Tracking**: Persistent storage of all email analyses with timestamps
+- **Knowledge Base Management**: Add, list, and manage RAG documents (policies, FAQs, guidelines)
 
 ## 🏗️ Architecture
 
-### Frontend (`Frontend/`)
+### Frontend (`frontend/`)
 - **Framework**: React 18.3.1 with TypeScript
-- **Build Tool**: Vite 6.3.5
-- **UI Library**: Radix UI components with Tailwind CSS
-- **Charts**: Recharts for analytics visualization
-- **Forms**: React Hook Form for settings management
-- **Notifications**: Sonner for toast notifications
+- **Build Tool**: Vite 6.3.5 with `@vitejs/plugin-react-swc`
+- **UI**: Custom dark gradient theme, glassmorphism, Radix UI primitives, Tailwind CSS
+- **Charts**: Recharts 2.15.2 for data visualization
+- **Forms**: React Hook Form 7.55.0 with validation
+- **Notifications**: Sonner 2.0.3 for toast messages
+- **Icons**: Lucide React 0.487.0
+- **Utilities**: clsx, tailwind-merge, class-variance-authority
 
 ### Backend (`backend/`)
-- **Framework**: FastAPI 0.104.1
-- **AI Model**: Google Gemini (gemini-pro)
-- **Database**: SQLite with SQLAlchemy 2.0.23 ORM
-- **Validation**: Pydantic v2.5.0
-- **Server**: Uvicorn ASGI server
+- **Framework**: FastAPI with Uvicorn ASGI server
+- **AI Model**: Ollama (gemma:2b) with fallback text extraction
+- **Embeddings**: Ollama (nomic-embed-text) for RAG
+- **RAG**: Vector similarity search with cosine similarity
+- **Database**: SQLite with SQLAlchemy ORM (PostgreSQL optional)
+- **Validation**: Pydantic v2
 
 ## 📋 Prerequisites
 
-- **Node.js** 18+ (for frontend)
-- **Python** 3.10+ (for backend)
-- **Google Gemini API Key** ([Get one here](https://makersuite.google.com/app/apikey))
+- **Node.js** 18+ (LTS recommended for frontend)
+- **Python** 3.9+ (for backend)
+- **Ollama** installed and running ([Download here](https://ollama.ai))
+- **Required Ollama Models**:
+  ```bash
+  ollama pull gemma:2b
+  ollama pull nomic-embed-text
+  ```
 - **Git** (for version control)
 
 ## 🚀 Quick Start
@@ -62,22 +72,34 @@ source venv/bin/activate
 # Install dependencies
 pip install -r requirements.txt
 
-# Configure environment
+# Configure environment (optional, defaults work fine)
 cp .env.example .env
-# Edit .env and add your GEMINI_API_KEY
+
+# Ensure Ollama is running
+curl http://localhost:11434/api/tags
+
+# Pull required models
+ollama pull gemma:2b
+ollama pull nomic-embed-text
 
 # Run the server
-uvicorn main:app --reload --port 8000
+cd app
+python -m uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 The backend API will be available at `http://localhost:8000`
 - Swagger UI docs: `http://localhost:8000/docs`
 - ReDoc: `http://localhost:8000/redoc`
 
+**Optional**: Seed the knowledge base with sample documents:
+```bash
+python scripts/seed_knowledge_base.py
+```
+
 ### 3. Frontend Setup
 
 ```bash
-cd Frontend
+cd frontend
 
 # Install dependencies
 npm install
@@ -95,14 +117,14 @@ The frontend will be available at `http://localhost:5173`
 
 ```
 InsightMail/
-├── Frontend/                    # React frontend application
+├── frontend/                    # React frontend application
 │   ├── src/
 │   │   ├── components/         # React components
 │   │   │   ├── EmailAnalyzer.tsx      # Main email analysis UI
 │   │   │   ├── Dashboard.tsx          # Analytics dashboard
 │   │   │   ├── HistoryPage.tsx        # Analysis history
 │   │   │   ├── SettingsPage.tsx       # App settings
-│   │   │   └── ui/                    # Radix UI components
+│   │   │   └── ui/                    # Radix UI & custom components
 │   │   ├── services/
 │   │   │   └── api.ts                 # Backend API client
 │   │   ├── App.tsx                    # Main app component
@@ -120,15 +142,24 @@ InsightMail/
 │   │   ├── db/                 # Database layer
 │   │   │   ├── models.py              # SQLAlchemy models
 │   │   │   └── session.py             # DB session factory
-│   │   ├── lms/                # LLM integration
-│   │   │   ├── gemini_client.py       # Gemini API wrapper
-│   │   │   └── prompts.py             # AI prompt templates
+│   │   ├── core/
+│   │   │   └── config.py              # Configuration settings
 │   │   ├── services/           # Business logic
-│   │   │   ├── pipeline.py            # Analysis orchestration
-│   │   │   └── utils.py               # Helper functions
+│   │   │   ├── llm_service.py         # Ollama LLM integration
+│   │   │   ├── rag_service.py         # RAG functionality
+│   │   │   └── pipeline.py            # Analysis orchestration
+│   │   ├── routers/            # API route handlers (updated)
+│   │   │   ├── analyze.py             # Email analysis endpoint
+│   │   │   ├── history.py             # History management
+│   │   │   ├── analytics.py           # Analytics data
+│   │   │   ├── settings.py            # Settings CRUD
+│   │   │   └── knowledge_base.py      # RAG knowledge base
 │   │   └── schemas/            # Pydantic models
-│   │       └── analysis.py            # Request/response schemas
+│   │       └── __init__.py            # Request/response schemas
 │   ├── main.py                 # FastAPI app entry
+│   ├── sample_data/            # Sample RAG documents
+│   ├── scripts/
+│   │   └── seed_knowledge_base.py     # KB seeding script
 │   ├── requirements.txt
 │   └── .env.example
 │
@@ -138,29 +169,46 @@ InsightMail/
 ## 🔌 API Endpoints
 
 ### Analysis
-- **POST** `/analyze` - Analyze email and generate insights
-  - Request: `{ "email": "string", "tone": "empathetic" }`
-  - Response: Full analysis with intent, emotion, risk score, smart reply
+- **POST** `/api/analyze` - Analyze email and generate insights
+  - Request: `{ "email": "string", "tone": "professional" }`
+  - Response: Full analysis with intent, emotion, urgency, compliance flags, summary, action items, risk score, smart reply, and RAG context
 
 ### History
-- **GET** `/history` - Get all analysis records (limit: 50)
-- **POST** `/history` - Create new analysis record
+- **GET** `/api/history?limit=50&offset=0` - Get analysis records with pagination
 
-### Dashboard
-- **GET** `/dashboard` - Get aggregated analytics metrics
-  - Returns: sentiment trends, intent distribution, compliance heatmap
+### Analytics Dashboard
+- **GET** `/api/analytics?days=30` - Get aggregated analytics metrics
+  - Returns: sentiment trends, intent distribution, compliance trends, urgency over time
 
 ### Settings
-- **GET** `/settings` - Get current application settings
-- **POST** `/settings` - Update application settings
+- **GET** `/api/settings` - Get current application settings
+- **POST** `/api/settings` - Update application settings
+  - Configure: enable_rag, enable_compliance_check, enable_risk_scoring, enable_smart_reply, rag_top_k, default_tone
+
+### Knowledge Base (RAG)
+- **POST** `/api/kb/add` - Add document to knowledge base
+- **GET** `/api/kb/list` - List all knowledge base documents
+- **DELETE** `/api/kb/{document_id}` - Delete a knowledge base document
 
 ## 🛠️ Environment Configuration
 
 ### Backend (`.env`)
 ```env
-GEMINI_API_KEY=your_api_key_here
-DATABASE_URL=sqlite:///./data/insightmail.db
-CORS_ORIGINS=http://localhost:5173
+# Database
+DATABASE_URL=sqlite:///./insightmail.db
+
+# Ollama Configuration
+OLLAMA_BASE_URL=http://localhost:11434
+OLLAMA_MODEL=gemma:2b
+OLLAMA_EMBEDDING_MODEL=nomic-embed-text
+OLLAMA_TIMEOUT=120
+
+# RAG Settings
+RAG_TOP_K=3
+RAG_SIMILARITY_THRESHOLD=0.5
+
+# CORS
+CORS_ORIGINS=http://localhost:5173,http://localhost:3000
 ```
 
 ### Frontend (`.env`)
@@ -170,22 +218,43 @@ VITE_API_BASE_URL=http://localhost:8000
 
 ## 🧪 Testing
 
-The backend includes a mock mode that activates automatically when `GEMINI_API_KEY` is not set, allowing you to test the full application flow without an API key.
+### Test with curl
+
+```bash
+# Analyze email
+curl -X POST http://localhost:8000/api/analyze \
+  -H "Content-Type: application/json" \
+  -d '{"email": "This is urgent! We need to fix the security breach immediately.", "tone": "professional"}'
+
+# Get history
+curl http://localhost:8000/api/history
+
+# Get analytics
+curl http://localhost:8000/api/analytics
+```
+
+### Test with Swagger UI
+
+Navigate to `http://localhost:8000/docs` for interactive API documentation and testing.
 
 ## 📊 Features Overview
 
 ### Email Analyzer
-- Real-time email analysis with AI insights
-- Tone selection for smart replies (formal, empathetic, friendly, assertive)
-- Detailed emotion and intent detection
-- Compliance and PII flagging
-- Risk score with breakdown metrics
+- Real-time email analysis with AI insights powered by Ollama
+- RAG-enhanced analysis using company knowledge base
+- Tone selection for smart replies (formal, empathetic, friendly, assertive, professional)
+- Detailed emotion detection with reasoning (with fallback for unparseable LLM output)
+- Intent classification and urgency assessment
+- Compliance flag detection and PII identification
+- Summary generation and action item extraction
+- Risk score (0-100) with breakdown: emotion intensity, priority, compliance risk, escalation likelihood
 
 ### Analytics Dashboard
 - Sentiment trends over time (line chart)
 - Intent distribution (bar chart)
-- Compliance issue heatmap
-- Overall statistics
+- Compliance trends tracking
+- Urgency analysis over time
+- Overall statistics and metrics
 
 ### History Page
 - Chronological list of all analyzed emails
@@ -194,8 +263,9 @@ The backend includes a mock mode that activates automatically when `GEMINI_API_K
 - Quick access to past analyses
 
 ### Settings
-- Toggle features on/off
-- Configure API endpoints
+- Toggle features: RAG, compliance check, risk scoring, smart reply
+- Configure RAG parameters (top_k, similarity threshold)
+- Set default tone for replies
 - Customize application behavior
 
 ## 🐛 Troubleshooting
@@ -208,14 +278,29 @@ npm set fetch-retries 5
 npm install
 ```
 
-### Backend Gemini API errors
-- Verify your API key in `.env`
-- Check the model name is `gemini-pro`
-- Ensure `load_dotenv()` is called in `gemini_client.py`
+### Ollama Not Running
+```bash
+# Check if Ollama is running
+curl http://localhost:11434/api/tags
+
+# Start Ollama (if not running)
+ollama serve
+```
+
+### Models Not Found
+```bash
+# Pull required models
+ollama pull gemma:2b
+ollama pull nomic-embed-text
+
+# Verify models are installed
+ollama list
+```
 
 ### CORS errors
 - Verify `CORS_ORIGINS` in backend `.env` matches your frontend URL
 - Default frontend runs on `http://localhost:5173`
+- Add your frontend URL to CORS_ORIGINS if needed
 
 ## 🤝 Contributing
 
@@ -239,11 +324,19 @@ This project is open source and available under the MIT License.
 
 ## 🙏 Acknowledgments
 
-- Google Gemini AI for powerful language understanding
+- Ollama for local LLM deployment and embeddings
 - Radix UI for accessible component primitives
 - FastAPI for the excellent Python web framework
 - React and Vite teams for modern web development tools
+- Recharts for beautiful data visualization
+- Tailwind CSS for utility-first styling
+
+## 📚 Additional Resources
+
+- [Frontend README](./frontend/README.md) - Detailed frontend documentation
+- [Backend README](./backend/README.md) - Complete backend API documentation
+- [Ollama Documentation](https://github.com/ollama/ollama) - LLM setup and usage
 
 ---
 
-**Built with ❤️ using React, FastAPI, and Google Gemini AI**
+**Built with ❤️ using React, FastAPI, and Ollama (Gemma 2B)**
