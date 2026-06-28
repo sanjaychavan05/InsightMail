@@ -320,7 +320,7 @@ This project is open source and available under the MIT License.
 - GitHub: [@Anand-b-patil](https://github.com/Anand-b-patil)
 
 **Sanjay Prakash Chavan**
--GitHub: https://github.com/sanjaychavan05
+- GitHub: https://github.com/sanjaychavan05
 
 ## 🙏 Acknowledgments
 
