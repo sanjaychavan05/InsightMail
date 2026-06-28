@@ -235,7 +235,7 @@ This project is open source and available under the MIT License.
 - GitHub: [@Anand-b-patil](https://github.com/Anand-b-patil)
 
 - **Sanjay Prakash Chavan**
--GitHyb: https://github.com/sanjaychavan05
+- GitHyb: https://github.com/sanjaychavan05
 
 ## 🙏 Acknowledgments
 
